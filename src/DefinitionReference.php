@@ -19,7 +19,7 @@ class DefinitionReference implements DefinitionElement
         return $this->definitionName;
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
     {
         $existingDefinitionNames = [];
         foreach ($otherDefinitions as $definition) {

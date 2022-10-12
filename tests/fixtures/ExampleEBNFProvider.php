@@ -26,7 +26,7 @@ class ExampleEBNFProvider
         $simpleRef = new \dcAG\EBNF\DefinitionReference('optRepOfC');
         $bcword = new \dcAG\EBNF\Concatenation($strb, $strc, $simpleRef);
         $bcwordDef = new \dcAG\EBNF\Definition('bcword', $bcword);
-        $optWhitespaceRepetition = new \dcAG\EBNF\Optional(
+        $whitespaceRepetition =
             new \dcAG\EBNF\Repetition(
                 new \dcAG\EBNF\Alternation(
                     new \dcAG\EBNF\TerminalString(' '),
@@ -34,20 +34,19 @@ class ExampleEBNFProvider
                     new \dcAG\EBNF\TerminalString('\n'),
                     new \dcAG\EBNF\TerminalString('\t')
                 )
-            )
-        );
-        $optWhitespaceRepetitionDef = new \dcAG\EBNF\Definition('optWhitespaceRepetition', $optWhitespaceRepetition);
-        $optWhitespaceRepetitionRef = new \dcAG\EBNF\DefinitionReference('optWhitespaceRepetition');
+            );
+        $whitespaceRepetitionDef = new \dcAG\EBNF\Definition('optWhitespaceRepetition', $whitespaceRepetition);
+        $whitespaceRepetitionRef = new \dcAG\EBNF\DefinitionReference('optWhitespaceRepetition');
         $bcWordRef = new \dcAG\EBNF\DefinitionReference('bcword');
         $concatRef = new \dcAG\EBNF\DefinitionReference('concat');
         $alterRef = new \dcAG\EBNF\DefinitionReference('alter');
-        $bcWordWhiteSpace = new \dcAG\EBNF\Concatenation($optWhitespaceRepetitionRef, $bcWordRef, $optWhitespaceRepetitionRef);
+        $bcWordWhiteSpace = new \dcAG\EBNF\Concatenation($whitespaceRepetitionRef, $bcWordRef, $whitespaceRepetitionRef);
         $bcWordWhiteSpaceDef = new \dcAG\EBNF\Definition('bcWordWhiteSpace', $bcWordWhiteSpace);
         $bcWordWhiteSpaceRef = new \dcAG\EBNF\DefinitionReference('bcWordWhiteSpace');
-        $concatWhiteSpace = new \dcAG\EBNF\Concatenation($optWhitespaceRepetitionRef, $concatRef, $optWhitespaceRepetitionRef);
+        $concatWhiteSpace = new \dcAG\EBNF\Concatenation($whitespaceRepetitionRef, $concatRef, $whitespaceRepetitionRef);
         $concatWhiteSpaceDef = new \dcAG\EBNF\Definition('concatWhiteSpace', $concatWhiteSpace);
         $concatWhiteSpaceRef = new \dcAG\EBNF\DefinitionReference('concatWhiteSpace');
-        $alterWhiteSpace = new \dcAG\EBNF\Concatenation($optWhitespaceRepetitionRef, $alterRef, $optWhitespaceRepetitionRef);
+        $alterWhiteSpace = new \dcAG\EBNF\Concatenation($whitespaceRepetitionRef, $alterRef, $whitespaceRepetitionRef);
         $alterWhiteSpaceDef = new \dcAG\EBNF\Definition('alterWhiteSpace', $alterWhiteSpace);
         $alterWhiteSpaceRef = new \dcAG\EBNF\DefinitionReference('alterWhiteSpace');
 
@@ -57,12 +56,13 @@ class ExampleEBNFProvider
                     $bcWordWhiteSpaceRef,
                     $concatWhiteSpaceRef,
                     $alterWhiteSpaceRef
-                )
+                ),
+                true
             );
         $documentDef = new \dcAG\EBNF\Definition('document', $document);
 
         $definitionList = new \dcAG\EBNF\DefinitionList(
-            $optWhitespaceRepetitionDef,
+            $whitespaceRepetitionDef,
             $straDef,
             $strbDef,
             $strcDef,

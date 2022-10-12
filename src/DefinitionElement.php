@@ -8,7 +8,7 @@ interface DefinitionElement
     public function getElementType(): DefinitionElementType;
     /** @return DefinitionElement[] */
     public function getChildren(): array;
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement;
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement;
     public function __toString(): string;
     public function hasDefinitionReference(): bool;
     public function hasDefinitionReferenceTo(string $name): bool;

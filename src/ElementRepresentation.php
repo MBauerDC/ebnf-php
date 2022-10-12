@@ -10,7 +10,7 @@ trait ElementRepresentation
      */
     private ?array $containedReferences = null;
     public readonly DefinitionElementType $elementType;
-    /** @readonly @var DefinitionElement[] */
+    /** @var DefinitionElement[] */
     public readonly array $children;
 
     public function getElementType(): DefinitionElementType

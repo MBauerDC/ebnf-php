@@ -19,7 +19,7 @@ trait ParsedElementRepresentation
         return $this->innerDefinitionElement;
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
     {
         return $this->innerDefinitionElement->tryParse($input, ...$otherDefinitions);
     }

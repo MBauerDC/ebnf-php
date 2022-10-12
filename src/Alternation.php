@@ -26,21 +26,30 @@ class Alternation implements DefinitionElement
         return $this->children;
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedAlternation
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedAlternation
     {
         $elements = [];
         $found = false;
+        $concatenate = array_map(fn(DefinitionElement $el) => (string)$el, $this->children);
+        $remainingInput = $input;
         foreach ($this->children as $child) {
-            $parsedElement = $child->tryParse($input, ...$otherDefinitions);
+            $parsedElement = $child->tryParse($remainingInput, ...$otherDefinitions);
             $elements[] = $parsedElement ?? $child;
             if ($parsedElement !== null) {
                 $found = true;
+                break;
             }
         }
+
+        $concatenation = implode(' | ', $concatenate);
         if (!$found) {
+            //echo "Failed to parse alternation ($concatenation)." . PHP_EOL;
             return null;
         }
-        return new ParsedAlternation(...$elements);
+        $input = $remainingInput;
+        $parsed = new ParsedAlternation(...$elements);
+        //echo "Successfully parsed alternation ($concatenation) with value [{$parsed->getParsedString()}]." . PHP_EOL;
+        return $parsed;
     }
 
     public function __toString(): string

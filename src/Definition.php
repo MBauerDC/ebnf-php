@@ -11,7 +11,7 @@ class Definition
         public readonly DefinitionElement $rightHandSide,
     ) {}
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
     {
         $parsedElement = $this->rightHandSide->tryParse($input, ...$otherDefinitions);
         return $parsedElement;

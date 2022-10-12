@@ -26,17 +26,24 @@ class Concatenation implements DefinitionElement
         return $this->children;
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedConcatenation
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedConcatenation
     {
         $elements = [];
+        $childStr = \implode(', ', \array_map(fn(DefinitionElement $el) => (string)$el, $this->children));
+        $remainingInput = $input;
         foreach ($this->children as $child) {
-            $parsedElement = $child->tryParse($input, ...$otherDefinitions);
+            $parsedElement = $child->tryParse($remainingInput, ...$otherDefinitions);
             if ($parsedElement === null) {
+                //echo "Failed to parse concatenation ($childStr)." . PHP_EOL;
                 return null;
             }
             $elements[] = $parsedElement;
         }
-        return new ParsedConcatenation(...$elements);
+        $input = $remainingInput;
+
+        $parsed = new ParsedConcatenation(...$elements);
+        //echo "Successfully parsed concatenation ($childStr) with value [{$parsed->getParsedString()}]." . PHP_EOL;
+        return $parsed;
     }
 
     public function __toString(): string

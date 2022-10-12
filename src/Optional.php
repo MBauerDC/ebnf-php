@@ -19,9 +19,10 @@ class Optional implements DefinitionElement
         return $this->innerElement;
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
     {
         $parsedElement = $this->innerElement->tryParse($input, ...$otherDefinitions);
+        //echo "Successfully parsed optional of {$this->getInnerElement()}." . PHP_EOL;
         return new ParsedOptional($parsedElement ?? $this->innerElement);
     }
 

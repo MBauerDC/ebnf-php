@@ -20,7 +20,11 @@ class EBNFGrammar
 
     public function tryParse(string $input): ?ParsedDefinitionElement
     {
-        return $this->definitionList[$this->documentDefinitionName]->tryParse($input, ...$this->definitionsWithoutDocumentDefinition);
+        $parsed = $this->definitionList[$this->documentDefinitionName]->tryParse($input, ...$this->definitionsWithoutDocumentDefinition);
+        if (null !== $parsed && $input === '') {
+            return $parsed;
+        }
+        return null;
     }
 
     public function __toString(): string

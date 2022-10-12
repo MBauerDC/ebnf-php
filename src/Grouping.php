@@ -19,9 +19,15 @@ class Grouping implements DefinitionElement
         return $this->children[0];
     }
 
-    public function tryParse(string $input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
+    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
     {
-        return $this->children[0]->tryParse($input, ...$otherDefinitions);
+        $parsedInner = $this->children[0]->tryParse($input, ...$otherDefinitions);
+        if (null !== $parsedInner) {
+            //echo "Successfully parsed grouping of {$this->getInnerElement()}." . PHP_EOL;
+            return new ParsedGrouping($parsedInner);
+        }
+        //echo "Failed to parse grouping of {$this->getInnerElement()}." . PHP_EOL . PHP_EOL;
+        return null;
     }
 
     public function __toString(): string
