@@ -19,13 +19,23 @@ trait ParsedElementRepresentation
         return $this->innerDefinitionElement;
     }
 
-    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
-    {
-        return $this->innerDefinitionElement->tryParse($input, ...$otherDefinitions);
+    public function tryParse(
+        string &$input,
+        array $currDefinitionElementAncestors,
+        array $currDefinitionAncestors,
+        Definition ...$otherDefinitions
+    ): ?ParsedDefinitionElement {
+        return $this->innerDefinitionElement->tryParse($input, $currDefinitionElementAncestors, $currDefinitionAncestors, ...$otherDefinitions);
     }
 
     public function __toString(): string
     {
         return $this->innerDefinitionElement->__toString();
+    }
+
+
+    public function withReplacedInnerElement(DefinitionElement $oldElement, DefinitionElement $newElement): DefinitionElement
+    {
+        return $this;
     }
 }

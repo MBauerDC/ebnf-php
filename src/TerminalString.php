@@ -7,11 +7,33 @@ class TerminalString implements DefinitionElement
 {
     use ElementRepresentation;
 
+    public readonly string $value;
+
+    protected bool $isNewLine;
+
+    protected function checkForMatch(string $input, string &$match): bool
+    {
+        if ($this->isNewLine) {
+            $matches = [];
+            $doesMatch = \preg_match('/^\R/', $input, $matches);
+            $match = $doesMatch ? $matches[0] : '';
+            return $doesMatch !== false && $doesMatch !== 0;
+        }
+        $matches = \str_starts_with($input, $this->value);
+        $match = $matches ? $this->value : '';
+        return $matches;
+    }
+
     public function __construct(
-        public readonly string $value,
+        DefinitionElement | Definition | null $parent,
+        string $value,
     ) {
+        $this->parent = $parent;
         $this->elementType = DefinitionElementType::TerminalString;
         $this->children = [];
+        $this->value = $value;
+        $this->isNewLine = \in_array($this->value, ['\r', '\n', '\r\n', '\n\r']);
+
     }
 
     public function getValue(): string
@@ -19,13 +41,22 @@ class TerminalString implements DefinitionElement
         return $this->value;
     }
 
-    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
-    {
+    public function tryParse(
+        string &$input,
+        array $currDefinitionElementAncestors,
+        array $currDefinitionAncestors,
+        Definition ...$otherDefinitions
+    ): ?ParsedTerminalString {
         //echo "Trying to parse terminal string {$this->value} from input [$input]" . PHP_EOL;
-        if (str_starts_with($input, $this->value)) {
+        $matched = '';
+        if ($this->checkForMatch($input, $matched)) {
             //echo "Successfully parsed terminal string {$this->value}." . PHP_EOL;
-            $input = substr($input, \mb_strlen($this->value));
-            return new ParsedTerminalString($this->value);
+            if ($this->isNewLine) {
+                $input = \preg_replace('/\R/', '' , $input, 1);
+            } else {
+                $input = substr($input, \mb_strlen($this->value));
+            }
+            return new ParsedTerminalString($this->parent, $matched);
         }
         //echo "Failed to parse terminal string {$this->value}." . PHP_EOL;
         return null;
@@ -36,5 +67,14 @@ class TerminalString implements DefinitionElement
         return '"' . $this->value . '"';
     }
 
+    public function withParent(DefinitionElement|Definition $parent): TerminalString
+    {
+        return new self($parent, $this->value);
+    }
+
+    public function withReplacedInnerElement(DefinitionElement $oldElement, DefinitionElement $newElement): TerminalString
+    {
+        return $this;
+    }
 
 }

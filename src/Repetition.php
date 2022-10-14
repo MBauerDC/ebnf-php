@@ -8,11 +8,13 @@ class Repetition implements DefinitionElement
     use ElementRepresentation;
 
     public function __construct(
-        DefinitionElement $innerElementType,
-        public readonly bool $atLeastOne = false,
+        DefinitionElement | Definition | null $parent,
+        DefinitionElement                     $innerElement,
+        public readonly bool                  $atLeastOne = false,
     ) {
+        $this->parent = $parent;
         $this->elementType = DefinitionElementType::Repetition;
-        $this->children = [$innerElementType];
+        $this->children = [$innerElement->withParent($this)];
     }
 
     public function getInnerElementType(): DefinitionElement
@@ -20,12 +22,18 @@ class Repetition implements DefinitionElement
         return $this->children[0];
     }
 
-    public function tryParse(string &$input, Definition ...$otherDefinitions): ?ParsedDefinitionElement
-    {
+    public function tryParse(
+        string &$input,
+        array $currDefinitionElementAncestors,
+        array $currDefinitionAncestors,
+        Definition ...$otherDefinitions
+    ): ?ParsedRepetition {
+        $currDefinitionElementAncestors[] = $this;
         $parsedElements = [];
         $remainingInput = $input;
         while (true) {
-            $parsedElement = $this->children[0]->tryParse($remainingInput, ...$otherDefinitions);
+            //echo PHP_EOL . " PARSING CHILD " . PHP_EOL;
+            $parsedElement = $this->tryParseChild($this->children[0], $remainingInput, $currDefinitionElementAncestors, $currDefinitionAncestors, ...$otherDefinitions);
             if ($parsedElement === null) {
                 break;
             }
@@ -38,9 +46,10 @@ class Repetition implements DefinitionElement
             //echo "Failed to parse repetition of {$this->getInnerElementType()}." . PHP_EOL . PHP_EOL;
             return null;
         }
-        $input = $remainingInput;
 
-        $parsed = new ParsedRepetition($this, ...$parsedElements);
+        $input = $remainingInput;
+        $parsed = new ParsedRepetition($this->parent, $this, ...$parsedElements);
+
         //echo "Successfully parsed repetition of {$this->getInnerElementType()} as value [{$parsed->getParsedString()}]" . PHP_EOL . PHP_EOL;
         return $parsed;
     }
@@ -48,6 +57,18 @@ class Repetition implements DefinitionElement
     public function __toString(): string
     {
         return "{{$this->children[0]}}";
+    }
+
+    public function withParent(DefinitionElement|Definition $parent): Repetition
+    {
+        return new self($parent, $this->children[0], $this->atLeastOne);
+    }
+
+    public function withReplacedInnerElement(DefinitionElement $oldElement, DefinitionElement $newElement): Repetition
+    {
+        $currChild = $this->children[0];
+        $replacement = (string)$currChild === (string)$oldElement ? $newElement : $currChild;
+        return new Repetition($this->parent, $replacement, $this->atLeastOne);
     }
 
 

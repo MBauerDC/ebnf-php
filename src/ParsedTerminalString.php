@@ -14,4 +14,10 @@ class ParsedTerminalString extends TerminalString implements ParsedDefinitionEle
     {
         return $this;
     }
+
+    public function withParent(DefinitionElement|Definition $parent): ParsedTerminalString
+    {
+        return new self($parent, $this->value);
+    }
+
 }

@@ -8,8 +8,10 @@ class ParsedConcatenation implements ParsedDefinitionElement
     use ParsedElementRepresentation;
 
     public function __construct(
+        DefinitionElement|Definition|null $parent,
         ParsedDefinitionElement ...$parsedInnerElements
     ) {
+        $this->parent = $parent;
         $this->elementType = DefinitionElementType::Concatenation;
         $this->children = $parsedInnerElements;
         $parsedString = '';
@@ -17,7 +19,7 @@ class ParsedConcatenation implements ParsedDefinitionElement
             $parsedString .= $parsedInnerElement->getParsedString();
         }
         $this->parsedString = $parsedString;
-        $this->innerDefinitionElement = new Concatenation(...$parsedInnerElements);
+        $this->innerDefinitionElement = new Concatenation(...\array_map(fn(ParsedDefinitionElement $el) => $el->getInnerDefinitionElement(), $parsedInnerElements));
     }
 
     /** @return ParsedDefinitionElement[] */
@@ -28,6 +30,12 @@ class ParsedConcatenation implements ParsedDefinitionElement
     public function getInnerDefinitionElement(): Concatenation
     {
         return $this->innerDefinitionElement;
+    }
+
+    public function withParent(DefinitionElement|Definition $parent): ParsedConcatenation
+    {
+        $newChildren = \array_map(static fn(ParsedDefinitionElement $child): ParsedDefinitionElement => $child->withParent($parent), $this->children);
+        return new self($parent, ...$newChildren);
     }
 
 }
