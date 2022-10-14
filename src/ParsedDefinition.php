@@ -11,4 +11,18 @@ class ParsedDefinition extends Definition
     ) {
         parent::__construct($name, $rightHandSide);
     }
+
+    public function getParsedString(): string
+    {
+        /** @var ParsedDefinitionElement $rhs */
+        $rhs = $this->rightHandSide;
+        return $rhs->getParsedString();
+    }
+
+    public function getRightHandSide(): ParsedDefinitionElement
+    {
+        /** @var ParsedDefinitionElement $rhs */
+        $rhs = $this->rightHandSide;
+        return $rhs;
+    }
 }

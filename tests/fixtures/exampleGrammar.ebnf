@@ -1,0 +1,6 @@
+Zero = "0";
+DigitWithoutZero = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+Digit = Zero | DigitWithoutZero;
+Minus = "-";
+NaturalNumber = DigitWithoutZero, {Digit};
+Integer = [Minus], NaturalNumber;

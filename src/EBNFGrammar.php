@@ -10,7 +10,7 @@ class EBNFGrammar
         public readonly DefinitionList $definitionList,
         public readonly string $documentDefinitionName
     ) {
-        if (!\array_key_exists($this->documentDefinitionName, $this->definitionList->getTopLevelDefinitions())) {
+        if (!\array_key_exists($this->documentDefinitionName, $this->definitionList->getDefinitions())) {
             throw new \InvalidArgumentException("Document definition {$this->documentDefinitionName} does not exist.");
         }
         $definitionsWithoutDocumentDefinition = $this->definitionList->getDefinitions();
@@ -18,9 +18,13 @@ class EBNFGrammar
         $this->definitionsWithoutDocumentDefinition = $definitionsWithoutDocumentDefinition;
     }
 
-    public function tryParse(string $input): ?ParsedDefinitionElement
+    public function tryParse(string $input): ?ParsedDefinition
     {
-        $parsed = $this->definitionList[$this->documentDefinitionName]->tryParse($input, ...$this->definitionsWithoutDocumentDefinition);
+        $definitionsList = $this->definitionList->getDefinitions();
+        $docDef = $this->definitionList[$this->documentDefinitionName];
+        $currDefinitionElementAncestors = [];
+        $currDefinitionAncestors = [$docDef];
+        $parsed = $docDef->tryParse($input, $currDefinitionElementAncestors, $currDefinitionAncestors, ...$definitionsList);
         if (null !== $parsed && $input === '') {
             return $parsed;
         }

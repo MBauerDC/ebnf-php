@@ -8,7 +8,7 @@ class Validation
 
     public static function definitionTerminates(Definition $definition, Definition...$previousDefinitions): bool
     {
-        return self::definitionElementTerminates($definition->rightHandSide, $definition->name, [], ...$previousDefinitions);
+        return self::definitionElementTerminates($definition->getRightHandSide(), $definition->name, [], ...$previousDefinitions);
     }
 
     public static function definitionElementTerminates(
@@ -30,7 +30,7 @@ class Validation
         $rhsType = $definitionElement->getElementType();
         switch ($rhsType) {
             case DefinitionElementType::TerminalString:
-                //echo 'TerminalString terminates' . PHP_EOL;
+                echo 'TerminalString terminates' . PHP_EOL;
                 return true;
             case DefinitionElementType::Concatenation:
                 // If the concatenation contains a recursive reference, it will be considered terminating,
@@ -67,7 +67,7 @@ class Validation
                 $terminates = $containsRecursiveReference ?
                     $containsSomethingNotARecursiveReference && $reducedBool :
                     $reducedBool;
-                //echo "Concatenation terminates? [$terminates]" . PHP_EOL;
+                echo "Concatenation terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             case DefinitionElementType::Alternation:
                 // An alternation - like a concatenation - only terminates of ALL of its children terminate
@@ -82,7 +82,7 @@ class Validation
                         ),
                     true
                 );
-                //echo "Alternation terminates? [$terminates]" . PHP_EOL;
+                echo "Alternation terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             case DefinitionElementType::DefinitionReference:
                 /** @var DefinitionReference $definitionElement */
@@ -98,13 +98,13 @@ class Validation
                     $terminates =
                         \in_array(DefinitionElementType::Concatenation->value, $recursionAncestorElementTypes, true) &&
                         $lastAncestor !== DefinitionElementType::Alternation->value;
-                    //echo "Reference terminates? [$terminates]" . PHP_EOL;
+                    echo "Reference terminates? [$terminates]" . PHP_EOL;
                     return $terminates;
                 }
 
                 $referencedDefinition = $indexedDefinitions[$referencedDefinitionName] ?? null;
                 if (null === $referencedDefinition) {
-                    //echo "Reference terminates? []" . PHP_EOL;
+                    echo "Reference terminates? []" . PHP_EOL;
                     return false;
                 }
                 $filteredPreviousDefinitions = \array_filter(
@@ -112,12 +112,12 @@ class Validation
                     static fn(Definition $previousDefinition) => $previousDefinition->name !== $referencedDefinitionName
                 );
                 $terminates = self::definitionElementTerminates(
-                    $referencedDefinition->rightHandSide,
+                    $referencedDefinition->getRightHandSide(),
                     $referencedDefinition->name,
                     $recursionAncestorElementTypes,
                     ...$filteredPreviousDefinitions
                 );
-                //echo "Reference terminates? [$terminates]" . PHP_EOL;
+                echo "Reference terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             case DefinitionElementType::Grouping:
                 $terminates = self::definitionElementTerminates(
@@ -126,7 +126,7 @@ class Validation
                     [...$recursionAncestorElementTypes, DefinitionElementType::Grouping->value],
                     ...$previousDefinitions
                 );
-                //echo "Grouping terminates? [$terminates]" . PHP_EOL;
+                echo "Grouping terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             case DefinitionElementType::Optional:
                 $terminates = self::definitionElementTerminates(
@@ -135,7 +135,7 @@ class Validation
                     [...$recursionAncestorElementTypes, DefinitionElementType::Optional->value],
                     ...$previousDefinitions
                 );
-                //echo "Optional terminates? [$terminates]" . PHP_EOL;
+                echo "Optional terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             case DefinitionElementType::Repetition:
                 $terminates = self::definitionElementTerminates(
@@ -144,7 +144,7 @@ class Validation
                     [...$recursionAncestorElementTypes, DefinitionElementType::Repetition->value],
                     ...$previousDefinitions
                 );
-                //echo "Repetition terminates? [$terminates]" . PHP_EOL;
+                echo "Repetition terminates? [$terminates]" . PHP_EOL;
                 return $terminates;
             default:
                 return false;

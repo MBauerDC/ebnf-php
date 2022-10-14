@@ -20,7 +20,7 @@ class ParsesValidTextSuccessfullyTest extends TestCase
         echo PHP_EOL . PHP_EOL . PHP_EOL . "Grammar: " . PHP_EOL . PHP_EOL . $this->exampleGrammar->__toString();
     }
 
-    public function testParsesValidTextWithoutError(): void
+    public function testParsesValidTextWithoutErrorOrRest(): void
     {
         echo "Parsing [{$this->validExampleInput}]:" . PHP_EOL;
         $parsedResult = $this->exampleGrammar->tryParse($this->validExampleInput);

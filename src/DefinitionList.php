@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace dcAG\EBNF;
 
 
-use function dcAG\EBNF\validation\definitionTerminates;
-
 class DefinitionList implements \ArrayAccess
 {
     protected array $definitions = [];
@@ -23,12 +21,13 @@ class DefinitionList implements \ArrayAccess
      */
     public function __construct(
         Definition ...$definitions
-    ) {
+    )
+    {
         foreach ($definitions as $definition) {
             if (!Validation::definitionTerminates($definition, ...$this->definitions)) {
-                throw new \InvalidArgumentException("Definition {$definition->name} does not terminate.");
+                throw new \InvalidArgumentException("Definition with representation [{$definition}] does not terminate.");
             }
-            $this->containedReferences += $definition->rightHandSide->getContainedReferences();
+            $this->containedReferences += $definition->getRightHandSide()->getContainedReferences();
             $this->definitions[$definition->name] = $definition;
         }
         foreach ($this->definitions as $definitionName => $definition) {
@@ -38,32 +37,42 @@ class DefinitionList implements \ArrayAccess
         }
         $topLevelDefinitionsCount = \count($this->topLevelDefinitions);
         if (0 === $topLevelDefinitionsCount) {
-            throw new \InvalidArgumentException("No top-level definitions found.");
-        }
-        if (1 === $topLevelDefinitionsCount) {
-            $this->documentDefinition = $this->topLevelDefinitions[array_key_first($this->topLevelDefinitions)];
-            $definitionsWithoutDocumentDefinition  = $this->definitions;
-            unset($definitionsWithoutDocumentDefinition[$this->documentDefinition->name]);
-            $this->definitionsWithoutDocumentDefinition = $definitionsWithoutDocumentDefinition;
+            $this->documentDefinition = $this->definitions[\array_key_first($this->definitions)];
+
         } else {
-            $this->documentDefinition = new Definition(
-                '_document',
-                new Alternation(
-                    ...(
-                        \array_map(
-                            static fn(Definition $definition) => new DefinitionReference($definition->name),
-                            $this->topLevelDefinitions
+            if (1 === $topLevelDefinitionsCount) {
+                $this->documentDefinition = $this->topLevelDefinitions[array_key_first($this->topLevelDefinitions)];
+                $definitionsWithoutDocumentDefinition = $this->definitions;
+                unset($definitionsWithoutDocumentDefinition[$this->documentDefinition->name]);
+                $this->definitionsWithoutDocumentDefinition = $definitionsWithoutDocumentDefinition;
+            } else {
+                $this->documentDefinition = new Definition(
+                    '_document',
+                    new Alternation(
+                        null,
+                        ...(
+                            \array_map(
+                                static fn(Definition $definition) => new DefinitionReference(null, $definition->name),
+                                $this->topLevelDefinitions
+                            )
                         )
                     )
-                )
-            );
-            $this->definitionsWithoutDocumentDefinition = $this->definitions;
+                );
+                $this->definitionsWithoutDocumentDefinition = $this->definitions;
+            }
         }
     }
 
-    public function tryParseDocument(string $input): ?ParsedDefinitionElement
+    public function tryParseDocument(string $input): ?ParsedDefinition
     {
-        $parsedElement = $this->documentDefinition->tryParse($input, ...$this->definitionsWithoutDocumentDefinition);
+        $definitionsList = $this->definitionsWithoutDocumentDefinition;
+        if (empty($definitionsList)) {
+            //echo PHP_EOL . " Supplanting definitions for tryParse ";
+            $definitionsList = $this->definitions;
+        }
+        $definitionsList += [$this->documentDefinition->name => $this->documentDefinition];
+        //echo PHP_EOL . " DEFINITION LIST COUNT IS " . \count($definitionsList) . PHP_EOL;
+        $parsedElement = $this->documentDefinition->tryParse($input, ...$definitionsList);
         return $parsedElement;
     }
 
